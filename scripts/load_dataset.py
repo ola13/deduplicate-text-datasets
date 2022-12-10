@@ -16,6 +16,7 @@ import tensorflow as tf
 import os
 import struct
 import numpy as np
+from tqdm import tqdm
 from transformers import GPT2Tokenizer, T5Tokenizer
 import multiprocessing as mp
 
@@ -50,6 +51,7 @@ ds = tfds.load(dataset_name, split=split, shuffle_files=False, batch_size=2**16,
                data_dir=data_dir)
 assert isinstance(ds, tf.data.Dataset)
 print(ds)
+print("done loading dataset")
 
 pre_sep = args.pre_sep
 post_sep = args.post_sep
@@ -77,7 +79,7 @@ fout = open(os.path.join(save_dir, dataset_name+"."+split), "wb")
 with mp.get_context("fork").Pool(mp.cpu_count()) as p:
     i = 0
     sizes = [0]
-    for b in ds:
+    for b in tqdm(ds):
         print(i)
     
         text = b['text'].numpy()

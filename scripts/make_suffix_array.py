@@ -26,7 +26,7 @@ HACK = 100000
 started = []
 
 if data_size > 10e9:
-    total_jobs = 100
+    total_jobs = 200
     jobs_at_once = 20
 elif data_size > 1e9:
     total_jobs = 96

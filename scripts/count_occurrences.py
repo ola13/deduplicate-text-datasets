@@ -15,6 +15,7 @@ import os
 import numpy as np
 
 import argparse
+import pickle
 
 parser = argparse.ArgumentParser(description='Count occurrences of sequence.')
 parser.add_argument('--suffix', type=str, required=True)

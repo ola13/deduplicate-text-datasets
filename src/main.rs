@@ -313,9 +313,9 @@ fn count_occurances(text: &filebuffer::FileBuffer,
         return 0; // not found
     }
 
-    if print_where {
-        println!("Found at: {}", pos);
-    }
+    // if print_where {
+    // println!("Found first occurance at: {} - {}", pos,  String::from_utf8_lossy(buf));
+    // }
     
     high = size/(size_width as u64);
     while low < high {
@@ -331,9 +331,18 @@ fn count_occurances(text: &filebuffer::FileBuffer,
         if str != buf {
             high = mid;
         } else {
+            // println!("Found at: {} - {}", pos, String::from_utf8_lossy(buf));
             low = mid+1;
         }
     }
+
+    for i in start..low {
+        let pos = table_load_filebuffer(&table, i as usize, size_width);
+        buf = &text[pos..pos+str.len()];
+        println!("Found at: {}", pos);
+        // println!("Found at: {} - {}", pos, String::from_utf8_lossy(buf));
+    }
+    println!("Low: {} - Start: {}", low, start); 
     return low-start;
 }
 
@@ -587,9 +596,12 @@ fn cmd_self_similar(data_file: &String, length_threshold: &usize, frequency_thre
                 if does_match {
                     if !first {
                         pairs.push(cur_location);
+                        // println!("Suf2 {} - {}", cur_location, String::from_utf8_lossy(&suf2[..length_threshold]));
                     } else {
                         pairs.push(prev_location);
                         pairs.push(cur_location);
+                        // println!("Suf2 {} - {}", cur_location, String::from_utf8_lossy(&suf2[..length_threshold]));
+                        // println!("Suf1 {} - {}", prev_location, String::from_utf8_lossy(&suf1[..length_threshold]));
                         first = false;
                     }
                 } else {
@@ -901,11 +913,10 @@ fn cmd_merge(data_files: &Vec<String>, output_file: &String, num_threads: i64)  
     let nn:usize = data_files.len();
 
     fn load_text2<'s,'t>(fpath:String) -> Vec<u8> {
-        println!("Setup buffer");
+        println!("Setup buffer for {}", fpath);
         let mut text_ = Vec::with_capacity(std::fs::metadata(fpath.clone()).unwrap().len() as usize);
-        println!("Done buffer {}", text_.len());
         fs::File::open(fpath.clone()).unwrap().read_to_end(&mut text_).unwrap();
-        println!("Done read buffer");
+        println!("Done read buffer for text len {}", text_.len());
         return text_;
     }
 
@@ -1017,9 +1028,17 @@ fn cmd_merge(data_files: &Vec<String>, output_file: &String, num_threads: i64)  
         }
     }
 
+    println!("texts len {}", texts.len());
     // Make sure we have enough space to take strided offsets for multiple threads
     // This should be an over-approximation, and starts allowing new threads at 1k of data
-    let num_threads = std::cmp::min(num_threads, std::cmp::max((texts.len() as i64 - 1024)/10, 1));
+    let num_threads = std::cmp::min(
+        num_threads,
+        texts.len() as i64
+        // std::cmp::max(
+        //     (texts.len() as i64 - 1024)/10,
+        //     1,
+        // )
+    );
     println!("AA {}", num_threads);
 
     // Start a bunch of jobs that each work on non-overlapping regions of the final resulting suffix array

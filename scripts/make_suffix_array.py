@@ -27,7 +27,7 @@ started = []
 
 if data_size > 10e9:
     total_jobs = 200
-    jobs_at_once = 20
+    jobs_at_once = 40
 elif data_size > 1e9:
     total_jobs = 96
     jobs_at_once = 96
@@ -39,6 +39,9 @@ else:
     jobs_at_once = 1
 
 S = data_size//total_jobs
+
+print("Setting ulimit -Sn 1000000")
+os.popen("ulimit -Sn 1000000").read()
 
 
 for jobstart in range(0, total_jobs, jobs_at_once):
@@ -79,11 +82,13 @@ while True:
 
 print("Merging suffix trees")
 
-os.popen("rm tmp/out.table.bin.*").read()
+# os.popen("rm tmp/out.table.bin.*").read()
+
+tmp_folder = "tmp_roots_all"
 
 torun = " --suffix-path ".join(files)
-print("./target/debug/dedup_dataset merge --output-file %s --suffix-path %s --num-threads %d"%("tmp/out.table.bin", torun, mp.cpu_count()))
-pipe = os.popen("./target/debug/dedup_dataset merge --output-file %s --suffix-path %s --num-threads %d"%("tmp/out.table.bin", torun, mp.cpu_count()))
+print("./target/debug/dedup_dataset merge --output-file %s --suffix-path %s --num-threads %d"%("{}/out.table.bin".format(tmp_folder), torun, mp.cpu_count()))
+pipe = os.popen("./target/debug/dedup_dataset merge --output-file %s --suffix-path %s --num-threads %d"%("{}/out.table.bin".format(tmp_folder), torun, mp.cpu_count()))
 output = pipe.read()
 if pipe.close() is not None:
     print("Something went wrong with merging.")
@@ -91,9 +96,9 @@ if pipe.close() is not None:
     exit(1)
 #exit(0)
 print("Now merging individual tables")
-os.popen("cat tmp/out.table.bin.* > tmp/out.table.bin").read()
+os.popen("cat {tmp_folder}/out.table.bin.* > {tmp_folder}/out.table.bin".format(tmp_folder=tmp_folder)).read()
 print("Cleaning up")
-os.popen("mv tmp/out.table.bin %s.table.bin"%sys.argv[1]).read()
+os.popen("mv {}/out.table.bin {}.table.bin".format(tmp_folder, sys.argv[1])).read()
 
 if os.path.exists(sys.argv[1]+".table.bin"):
     if os.path.getsize(sys.argv[1]+".table.bin")%os.path.getsize(sys.argv[1]) != 0:

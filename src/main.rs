@@ -338,7 +338,7 @@ fn count_occurances(text: &filebuffer::FileBuffer,
 
     for i in start..low {
         let pos = table_load_filebuffer(&table, i as usize, size_width);
-        buf = &text[pos..pos+str.len()];
+        // buf = &text[pos..pos+str.len()];
         println!("Found at: {}", pos);
         // println!("Found at: {} - {}", pos, String::from_utf8_lossy(buf));
     }
@@ -461,7 +461,7 @@ fn cmd_count_occurrences(fpath: &String, querypath: &String)   -> std::io::Resul
     let mut str = Vec::with_capacity(std::fs::metadata(querypath.clone()).unwrap().len() as usize);
     fs::File::open(querypath.clone()).unwrap().read_to_end(&mut str)?;
 
-    let occurances = count_occurances(&text, size_text,  &table, size_table, &str[0..str.len()], size_width as usize, false);
+    let occurances = count_occurances(&text, size_text,  &table, size_table, &str[0..str.len()], size_width as usize, true);
 
     println!("Number of times present: {}\n", occurances);
     Ok(())
